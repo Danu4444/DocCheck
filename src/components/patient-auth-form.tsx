@@ -72,10 +72,13 @@ export function PatientAuthForm() {
   }
 
   const handleBack = () => {
-    setStep('phone');
-    setOtp('');
-    setName('');
-  }
+    if (step === 'name') {
+      setStep('otp');
+    } else if (step === 'otp') {
+      setStep('phone');
+      setOtp('');
+    }
+  };
 
   const renderFormContent = () => {
     switch (step) {
@@ -113,7 +116,7 @@ export function PatientAuthForm() {
       case 'name':
          return (
             <>
-                <Button variant="link" onClick={handleBack} className="px-0 mb-4 text-muted-foreground" disabled>
+                <Button variant="link" onClick={handleBack} className="px-0 mb-4 text-muted-foreground">
                     <ChevronLeft className="mr-2 h-4 w-4" /> Go Back
                 </Button>
                 <form onSubmit={handleRegister} className="space-y-4">
