@@ -1,15 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { Stethoscope } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Stethoscope, ChevronLeft } from 'lucide-react';
 import { PatientAuthForm } from '@/components/patient-auth-form';
 import { DoctorAuthForm } from '@/components/doctor-auth-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
+  const router = useRouter();
+
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
+    <div className="relative flex min-h-screen w-full items-center justify-center bg-background p-4">
+      <Button variant="outline" size="icon" className="absolute top-4 left-4" onClick={() => router.back()}>
+        <ChevronLeft className="h-4 w-4" />
+        <span className="sr-only">Go back</span>
+      </Button>
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
