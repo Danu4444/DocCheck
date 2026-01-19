@@ -1,7 +1,9 @@
+'use client';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { HeartPulse, Upload, FileText } from 'lucide-react';
+import { HeartPulse, Upload, FileText, ChevronLeft } from 'lucide-react';
 import { medicalHistory } from '@/lib/data';
 import { PrescriptionUploader } from '@/components/prescription-uploader';
 import {
@@ -15,10 +17,16 @@ import {
 
 
 export default function MedicalHistoryPage() {
+  const router = useRouter();
   return (
     <div className="flex flex-col h-full">
       <header className="border-b bg-card p-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold font-headline flex items-center gap-2"><HeartPulse/> Medical History</h1>
+        <div className="flex items-center gap-4">
+            <Button variant="outline" size="icon" onClick={() => router.back()}>
+                <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <h1 className="text-2xl font-bold font-headline flex items-center gap-2"><HeartPulse/> Medical History</h1>
+        </div>
         <Dialog>
             <DialogTrigger asChild>
                 <Button>

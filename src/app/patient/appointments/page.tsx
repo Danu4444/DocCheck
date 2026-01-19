@@ -1,9 +1,10 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Calendar, Check, Clock, Phone, BellRing } from 'lucide-react';
+import { Calendar, Check, Clock, Phone, BellRing, ChevronLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
@@ -50,6 +51,7 @@ const pastAppointments = [
 
 export default function AppointmentsPage() {
     const { toast } = useToast();
+    const router = useRouter();
 
     const handleNotification = () => {
         toast({
@@ -64,7 +66,10 @@ export default function AppointmentsPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <header className="border-b bg-card p-4">
+      <header className="border-b bg-card p-4 flex items-center gap-4">
+        <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ChevronLeft className="h-4 w-4" />
+        </Button>
         <h1 className="text-2xl font-bold font-headline flex items-center gap-2"><Calendar/> My Appointments</h1>
       </header>
       <main className="flex-1 overflow-y-auto p-6">

@@ -1,11 +1,12 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Settings, Save, ToggleRight, Hash } from 'lucide-react';
+import { Settings, Save, ToggleRight, Hash, ChevronLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { doctors } from '@/lib/data';
 
@@ -13,6 +14,7 @@ const currentDoctor = doctors[0];
 
 export default function DoctorProfilePage() {
     const { toast } = useToast();
+    const router = useRouter();
     const [isAvailable, setIsAvailable] = useState(currentDoctor.available);
     const [tokenLimit, setTokenLimit] = useState(50);
     const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +33,10 @@ export default function DoctorProfilePage() {
 
   return (
     <div className="flex flex-col h-full">
-      <header className="border-b bg-card p-4">
+      <header className="border-b bg-card p-4 flex items-center gap-4">
+        <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ChevronLeft className="h-4 w-4" />
+        </Button>
         <h1 className="text-2xl font-bold font-headline flex items-center gap-2"><Settings/> Profile & Availability</h1>
       </header>
       <main className="flex-1 overflow-y-auto p-6">

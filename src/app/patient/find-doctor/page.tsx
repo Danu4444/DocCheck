@@ -1,17 +1,19 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MapPin, Search, Hospital, Stethoscope, Briefcase } from 'lucide-react';
+import { MapPin, Search, Hospital, Stethoscope, Briefcase, ChevronLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { doctors } from '@/lib/data';
 
 export default function FindDoctorPage() {
     const { toast } = useToast();
+    const router = useRouter();
 
     const handleLocationRequest = () => {
         toast({
@@ -40,7 +42,10 @@ export default function FindDoctorPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <header className="border-b bg-card p-4">
+      <header className="border-b bg-card p-4 flex items-center gap-4">
+        <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ChevronLeft className="h-4 w-4" />
+        </Button>
         <h1 className="text-2xl font-bold font-headline flex items-center gap-2"><Search/> Find a Doctor</h1>
       </header>
       <main className="flex-1 overflow-y-auto p-6">
