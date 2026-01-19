@@ -1,10 +1,11 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LayoutDashboard, Phone, UserCheck, Users, Play, SkipForward } from 'lucide-react';
+import { LayoutDashboard, Phone, UserCheck, Users, SkipForward, FileSearch } from 'lucide-react';
 import { appointments } from '@/lib/data';
 
 export default function DoctorDashboardPage() {
@@ -56,8 +57,14 @@ export default function DoctorDashboardPage() {
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="outline" size="sm">
+                                    <TableCell className="text-right space-x-2">
+                                        <Button asChild variant="outline" size="icon">
+                                            <Link href={`/doctor/patient/${appt.patient.id}`}>
+                                                <FileSearch className="h-4 w-4" />
+                                                <span className="sr-only">Inspect History</span>
+                                            </Link>
+                                        </Button>
+                                        <Button variant="outline" size="icon">
                                             <Phone className="h-4 w-4"/>
                                             <span className="sr-only">Call</span>
                                         </Button>

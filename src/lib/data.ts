@@ -65,6 +65,24 @@ export const patients = [
         age: 28,
         avatar: "https://picsum.photos/seed/avatar3/200/200",
     },
+    { 
+        id: 4, 
+        name: "Bob Williams", 
+        age: 52, 
+        avatar: "https://picsum.photos/seed/avatar4/200/200" 
+    },
+    { 
+        id: 5, 
+        name: "Charlie Brown", 
+        age: 61, 
+        avatar: "https://picsum.photos/seed/avatar5/200/200" 
+    },
+    { 
+        id: 6, 
+        name: "Diana Prince", 
+        age: 31, 
+        avatar: "https://picsum.photos/seed/avatar6/200/200" 
+    },
 ];
 
 export const appointments = [
@@ -80,17 +98,17 @@ export const appointments = [
     },
     {
         token: 9,
-        patient: { id: 4, name: "Bob Williams", age: 52, avatar: "https://picsum.photos/seed/avatar4/200/200" },
+        patient: patients[3],
         doctor: doctors[0],
     },
     {
         token: 10,
-        patient: { id: 5, name: "Charlie Brown", age: 61, avatar: "https://picsum.photos/seed/avatar5/200/200" },
+        patient: patients[4],
         doctor: doctors[0],
     },
     {
         token: 11,
-        patient: { id: 6, name: "Diana Prince", age: 31, avatar: "https://picsum.photos/seed/avatar6/200/200" },
+        patient: patients[5],
         doctor: doctors[0],
     },
      {
@@ -131,6 +149,16 @@ export const medicalHistory = [
         prescription: [
             "Ibuprofen 600mg as needed for pain",
             "Physical therapy referral"
+        ]
+    },
+    {
+        id: 4,
+        patientId: 2,
+        date: "September 5, 2023",
+        doctor: doctors[0],
+        diagnosis: "Seasonal Allergies",
+        prescription: [
+            "Cetirizine 10mg once daily",
         ]
     }
 ]
