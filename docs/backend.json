@@ -1,0 +1,298 @@
+{
+  "entities": {
+    "Doctor": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Doctor",
+      "type": "object",
+      "description": "Represents a doctor in the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Doctor entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "Doctor's email address.",
+          "format": "email"
+        },
+        "licenseNumber": {
+          "type": "string",
+          "description": "Doctor's license number."
+        },
+        "specialization": {
+          "type": "string",
+          "description": "Doctor's specialization (e.g., Cardiology, Pediatrics)."
+        },
+        "hospitalId": {
+          "type": "string",
+          "description": "Reference to Hospital. (Relationship: Hospital 1:N Doctor)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The doctor's name."
+        },
+        "isAvailable": {
+          "type": "boolean",
+          "description": "Indicates if the doctor is available for appointments today."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "licenseNumber",
+        "specialization",
+        "hospitalId",
+        "name",
+        "isAvailable"
+      ]
+    },
+    "Patient": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Patient",
+      "type": "object",
+      "description": "Represents a patient in the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Patient entity."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Patient's phone number."
+        },
+        "name": {
+          "type": "string",
+          "description": "Patient's name."
+        },
+        "medicalHistoryIds": {
+          "type": "array",
+          "description": "References to MedicalHistory entries. (Relationship: Patient 1:N MedicalHistory)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "phoneNumber",
+        "name"
+      ]
+    },
+    "MedicalHistory": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MedicalHistory",
+      "type": "object",
+      "description": "Represents a patient's medical history record.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MedicalHistory entity."
+        },
+        "patientId": {
+          "type": "string",
+          "description": "Reference to Patient. (Relationship: Patient 1:N MedicalHistory)"
+        },
+        "doctorId": {
+          "type": "string",
+          "description": "Reference to Doctor. (Relationship: Doctor 1:N MedicalHistory)"
+        },
+        "hospitalId": {
+          "type": "string",
+          "description": "Reference to Hospital. (Relationship: Hospital 1:N MedicalHistory)"
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the medical visit.",
+          "format": "date-time"
+        },
+        "prescriptionImageURL": {
+          "type": "string",
+          "description": "URL to the prescription image uploaded by the patient."
+        }
+      },
+      "required": [
+        "id",
+        "patientId",
+        "doctorId",
+        "hospitalId",
+        "date"
+      ]
+    },
+    "Hospital": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Hospital",
+      "type": "object",
+      "description": "Represents a hospital in the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Hospital entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Hospital name."
+        },
+        "location": {
+          "type": "string",
+          "description": "Hospital location (e.g., address)."
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Latitude coordinate of the hospital."
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Longitude coordinate of the hospital."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "location",
+        "latitude",
+        "longitude"
+      ]
+    },
+    "AppointmentToken": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AppointmentToken",
+      "type": "object",
+      "description": "Represents an appointment token for a patient.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the AppointmentToken entity."
+        },
+        "patientId": {
+          "type": "string",
+          "description": "Reference to Patient. (Relationship: Patient 1:N AppointmentToken)"
+        },
+        "doctorId": {
+          "type": "string",
+          "description": "Reference to Doctor. (Relationship: Doctor 1:N AppointmentToken)"
+        },
+        "hospitalId": {
+          "type": "string",
+          "description": "Reference to Hospital. (Relationship: Hospital 1:N AppointmentToken)"
+        },
+        "tokenNumber": {
+          "type": "number",
+          "description": "Token number assigned to the appointment."
+        },
+        "appointmentTime": {
+          "type": "string",
+          "description": "Scheduled time for the appointment.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the token (e.g., 'booked', 'completed', 'cancelled')."
+        }
+      },
+      "required": [
+        "id",
+        "patientId",
+        "doctorId",
+        "hospitalId",
+        "tokenNumber",
+        "appointmentTime",
+        "status"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/hospitals/{hospitalId}",
+        "definition": {
+          "entityName": "Hospital",
+          "schema": {
+            "$ref": "#/backend/entities/Hospital"
+          },
+          "description": "Stores hospital information. Each document represents a hospital.",
+          "params": [
+            {
+              "name": "hospitalId",
+              "description": "The unique identifier for the hospital."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/doctors/{doctorId}",
+        "definition": {
+          "entityName": "Doctor",
+          "schema": {
+            "$ref": "#/backend/entities/Doctor"
+          },
+          "description": "Stores doctor information. Requires the hospitalId to be set to determine the hospital relationship.",
+          "params": [
+            {
+              "name": "doctorId",
+              "description": "The unique identifier for the doctor."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/patients/{patientId}",
+        "definition": {
+          "entityName": "Patient",
+          "schema": {
+            "$ref": "#/backend/entities/Patient"
+          },
+          "description": "Stores patient information. Each document represents a patient.",
+          "params": [
+            {
+              "name": "patientId",
+              "description": "The unique identifier for the patient."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/patients/{patientId}/medicalHistory/{medicalHistoryId}",
+        "definition": {
+          "entityName": "MedicalHistory",
+          "schema": {
+            "$ref": "#/backend/entities/MedicalHistory"
+          },
+          "description": "Stores the medical history of a patient.  This is a subcollection of the patient document to easily retrieve a patient's history.",
+          "params": [
+            {
+              "name": "patientId",
+              "description": "The unique identifier for the patient."
+            },
+            {
+              "name": "medicalHistoryId",
+              "description": "The unique identifier for the medical history entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/appointmentTokens/{appointmentTokenId}",
+        "definition": {
+          "entityName": "AppointmentToken",
+          "schema": {
+            "$ref": "#/backend/entities/AppointmentToken"
+          },
+          "description": "Stores information about appointment tokens. Each document represents an appointment token.",
+          "params": [
+            {
+              "name": "appointmentTokenId",
+              "description": "The unique identifier for the appointment token."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to ensure security, scalability, and ease of debugging, following the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). Authorization Independence is achieved through denormalization of authorization data. Specifically, any subcollection that depends on its parent's data for authorization copies relevant fields (e.g., hospitalId in doctors) into the subcollection's documents, eliminating the need for `get()` calls in security rules. Structural Segregation divides data with differing access needs into separate collections (e.g., separating doctors and patients data). Access Modeling employs consistent patterns: path-based ownership for private user data (e.g., `/patients/{patientId}/medicalHistory/{medicalHistoryId}`) and membership maps for collaborative access (not explicitly needed, but a possibility if Doctors and Patients were to have a many to many relationship). QAPs are supported by segregating collections based on access control requirements. The structure uses explicit state modeling (`status` field) and predictable schemas with semantic naming for data clarity and consistency."
+  }
+}

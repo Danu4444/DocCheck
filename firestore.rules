@@ -1,0 +1,171 @@
+/**
+ * This ruleset enforces a security model for a medical application.
+ *
+ * Core Philosophy:
+ * The security model is centered on strict data privacy and ownership. A user,
+ * identified as a "Patient," has exclusive control over their personal data,
+ * including their profile and medical history. Data intended for public
+ * consumption, like hospital and doctor directories, is readable by anyone
+ * but cannot be modified by clients. Shared data, such as appointment tokens,
+ * is accessible only to the involved parties (the patient and the doctor).
+ *
+ * Data Structure:
+ * - /hospitals/{hospitalId}: Publicly readable hospital information.
+ * - /doctors/{doctorId}: Publicly readable doctor information.
+ * - /patients/{patientId}: Private root document for each user (patient).
+ * - /patients/{patientId}/medicalHistory/{medicalHistoryId}: A patient's private medical records.
+ * - /appointmentTokens/{appointmentTokenId}: Documents representing a shared appointment
+ *   between a specific patient and doctor.
+ *
+ * Key Security Decisions:
+ * - Default Deny: All paths are closed by default. Access is granted explicitly.
+ * - Patient Data Isolation: All data under `/patients/{patientId}` is strictly
+ *   limited to the authenticated user whose UID matches the `{patientId}`.
+ * - No User Listing: It is forbidden to list the `/patients` or `/appointmentTokens`
+ *   collections to protect all users' privacy.
+ * - Read-Only Public Directories: The `/hospitals` and `/doctors` collections
+ *   are public for reading to allow users to find care, but are locked against
+ *   all client-side writes to maintain data integrity.
+ *
+ * Denormalization for Authorization:
+ * To ensure fast and secure authorization, documents contain all necessary
+ * IDs for access decisions. For example, an `appointmentTokens` document
+ * contains both a `patientId` and a `doctorId` directly on it, allowing rules
+ * to grant access to either user without needing slow and costly `get()` calls
+ * to other collections.
+ *
+ * Structural Segregation:
+ * Private user data (`medicalHistory`) is stored in a subcollection under the
+ * user's own `/patients/{patientId}` document tree. This is separate from public
+ * top-level collections like `/hospitals` and `/doctors`, providing a clear
+ * and secure separation of data based on access control needs.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helper Functions
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns true if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Returns true if the requesting user's UID matches the provided userId.
+     * Used to verify resource ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Returns true if a document already exists.
+     * Used to protect against updates or deletes on non-existent documents.
+     */
+    function isExistingDoc() {
+      return resource != null;
+    }
+
+    /**
+     * Checks if the requesting user is either the patient or the doctor
+     * associated with a shared document (e.g., an appointment token).
+     */
+    function isParticipant(docData) {
+      return isSignedIn() && (request.auth.uid == docData.patientId || request.auth.uid == docData.doctorId);
+    }
+
+    // -------------------------------------------------------------------------
+    // Collection Rules
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description
+     *   Manages public hospital information. This data is readable by anyone
+     *   to allow users to browse available hospitals, but is not writable
+     *   from the client-side to protect data integrity.
+     * @path /hospitals/{hospitalId}
+     * @allow (get) Any user, signed in or not, can read a hospital's details.
+     * @deny (create) A user attempts to add a new hospital.
+     * @principle Public read access for directory data, with writes disabled for security.
+     */
+    match /hospitals/{hospitalId} {
+      allow get, list: if true;
+      // CRITICAL: Cannot implement owner-only writes. The 'Hospital' entity is missing an 'ownerId' or 'creatorId' field.
+      allow create, update, delete: if false; // TODO: Implement admin-only writes once an admin role system is in place.
+    }
+
+    /**
+     * @description
+     *   Manages public doctor profiles. This data is readable by anyone
+     *   to allow patients to find doctors, but is not client-writable.
+     * @path /doctors/{doctorId}
+     * @allow (get) Any user, signed in or not, can look up a doctor's profile.
+     * @deny (update) A user tries to change a doctor's specialization.
+     * @principle Public read access for directory data, with writes disabled for security.
+     */
+    match /doctors/{doctorId} {
+      allow get, list: if true;
+      // CRITICAL: Cannot implement owner-only writes. The 'Doctor' entity is missing an 'ownerId' or 'creatorId' field.
+      allow create, update, delete: if false; // TODO: Implement admin-only writes once an admin role system is in place.
+    }
+
+    /**
+     * @description
+     *   Manages a patient's root profile document. Only the authenticated
+     *   user corresponding to the `{patientId}` can create, read, or write
+     *   their own document. Listing all patients is forbidden.
+     * @path /patients/{patientId}
+     * @allow (create) auth.uid=patient1 creates /patients/patient1.
+     * @deny (get) auth.uid=patient2 tries to read /patients/patient1.
+     * @deny (list) Any user attempts to list all documents in the /patients collection.
+     * @principle Restricts access to a user's own data tree.
+     */
+    match /patients/{patientId} {
+      allow get: if isOwner(patientId);
+      allow list: if false;
+      allow create: if isOwner(patientId) && request.resource.data.id == patientId;
+      allow update: if isOwner(patientId) && isExistingDoc() && request.resource.data.id == resource.data.id;
+      allow delete: if isOwner(patientId) && isExistingDoc();
+
+      /**
+       * @description
+       *   Manages a patient's private medical history. Access is strictly
+       *   limited to the patient who owns the records.
+       * @path /patients/{patientId}/medicalHistory/{medicalHistoryId}
+       * @allow (create) auth.uid=patient1 creates a record in their own medicalHistory subcollection.
+       * @deny (list) auth.uid=patient2 tries to list records from patient1's medicalHistory.
+       * @principle Enforces document ownership within a user's private subcollection.
+       */
+      match /medicalHistory/{medicalHistoryId} {
+        allow get, list: if isOwner(patientId);
+        allow create: if isOwner(patientId) && request.resource.data.patientId == patientId;
+        allow update: if isOwner(patientId) && isExistingDoc() && request.resource.data.patientId == resource.data.patientId;
+        allow delete: if isOwner(patientId) && isExistingDoc();
+      }
+    }
+
+    /**
+     * @description
+     *   Manages appointment tokens, which are shared between a patient and a doctor.
+     *   Only the involved patient or doctor can read or update a token. Only the
+     *   patient can create or delete it. Listing all tokens is forbidden.
+     * @path /appointmentTokens/{appointmentTokenId}
+     * @allow (get) The patient OR the doctor associated with the token reads it.
+     * @deny (get) A user who is not the patient or doctor on the token tries to read it.
+     * @deny (list) Any user attempts to list all appointment tokens in the system.
+     * @principle Implements shared access for a document between specific collaborators.
+     */
+    match /appointmentTokens/{appointmentTokenId} {
+      allow get: if isParticipant(resource.data);
+      allow list: if false;
+      allow create: if isSignedIn() && request.resource.data.patientId == request.auth.uid && request.resource.data.id == appointmentTokenId;
+      allow update: if isParticipant(resource.data) && isExistingDoc() && request.resource.data.id == resource.data.id && request.resource.data.patientId == resource.data.patientId && request.resource.data.doctorId == resource.data.doctorId;
+      allow delete: if isOwner(resource.data.patientId) && isExistingDoc();
+    }
+  }
+}
