@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronLeft } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 
 export function PatientAuthForm() {
@@ -90,6 +90,12 @@ export function PatientAuthForm() {
     }, 1000);
   }
 
+  const handleBack = () => {
+    setStep('phone');
+    setOtp('');
+    setName('');
+  }
+
   return (
     <div className="mt-4">
       {step === 'phone' && (
@@ -114,36 +120,45 @@ export function PatientAuthForm() {
       )}
 
       {step === 'otp' && (
-        <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <div className="space-y-2">
-                <Label>Phone Number</Label>
-                <p className="text-sm text-muted-foreground">{phone}</p>
-            </div>
-          <div className="space-y-2">
-            <Label htmlFor="otp">OTP</Label>
-            <Input
-              id="otp"
-              type="text"
-              placeholder="Enter 6-digit OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              required
-              disabled={isLoading}
-              maxLength={6}
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Login
+        <>
+          <Button variant="link" onClick={handleBack} className="px-0 mb-4 text-muted-foreground">
+              <ChevronLeft className="mr-2 h-4 w-4" /> Go Back
           </Button>
-        </form>
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+              <div className="space-y-2">
+                  <Label>Phone Number</Label>
+                  <p className="text-sm font-bold">{phone}</p>
+              </div>
+            <div className="space-y-2">
+              <Label htmlFor="otp">OTP</Label>
+              <Input
+                id="otp"
+                type="text"
+                placeholder="Enter 6-digit OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                required
+                disabled={isLoading}
+                maxLength={6}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Login
+            </Button>
+          </form>
+        </>
       )}
 
       {step === 'name' && (
+        <>
+        <Button variant="link" onClick={handleBack} className="px-0 mb-4 text-muted-foreground">
+              <ChevronLeft className="mr-2 h-4 w-4" /> Go Back
+          </Button>
         <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
                 <Label>Phone Number</Label>
-                <p className="text-sm text-muted-foreground">{phone}</p>
+                <p className="text-sm font-bold">{phone}</p>
             </div>
             <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
@@ -175,6 +190,7 @@ export function PatientAuthForm() {
                 Register
             </Button>
         </form>
+        </>
       )}
     </div>
   );

@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2, Upload, ChevronLeft } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
 export function DoctorAuthForm() {
@@ -29,6 +29,10 @@ export function DoctorAuthForm() {
         toast({ variant: 'destructive', title: 'Invalid Email' });
         return;
       }
+       if (isSignUp && (name.trim().length < 2 || license.trim().length < 5)) {
+        toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields for sign up.' });
+        return;
+      }
       setIsLoading(true);
       setTimeout(() => {
         setOtpSent(true);
@@ -41,10 +45,6 @@ export function DoctorAuthForm() {
         toast({ variant: 'destructive', title: 'Invalid OTP' });
         return;
       }
-      if (isSignUp && (name.trim().length < 2 || license.trim().length < 5)) {
-        toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields for sign up.' });
-        return;
-      }
       setIsLoading(true);
       setTimeout(() => {
         toast({ title: isSignUp ? 'Registration Successful' : 'Login Successful' });
@@ -53,22 +53,63 @@ export function DoctorAuthForm() {
     }
   };
 
+  const handleBack = () => {
+      setOtpSent(false);
+      setOtp('');
+  }
+
+  if (otpSent) {
+    return (
+         <div className="mt-4">
+            <Button variant="link" onClick={handleBack} className="px-0 mb-4 text-muted-foreground">
+                <ChevronLeft className="mr-2 h-4 w-4" /> Go Back
+            </Button>
+            <form onSubmit={handleAuthAction} className="space-y-4">
+                 <div className="space-y-2">
+                    <Label>Email Address</Label>
+                    <p className="text-sm font-bold">{email}</p>
+                </div>
+                {isSignUp && (
+                    <>
+                         <div className="space-y-2">
+                            <Label>Full Name</Label>
+                            <p className="text-sm font-bold">{name}</p>
+                        </div>
+                         <div className="space-y-2">
+                            <Label>License Number</Label>
+                            <p className="text-sm font-bold">{license}</p>
+                        </div>
+                    </>
+                )}
+                <div className="space-y-2">
+                    <Label htmlFor="otp">OTP</Label>
+                    <Input id="otp" type="text" placeholder="Enter 6-digit OTP" value={otp} onChange={(e) => setOtp(e.target.value)} required disabled={isLoading} maxLength={6} />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isSignUp ? 'Create Account' : 'Login'}
+                </Button>
+            </form>
+        </div>
+    )
+  }
+
   return (
     <div className="mt-4">
-      <div className="mb-4 flex items-center justify-center space-x-2">
-        <Label htmlFor="auth-mode" className={!isSignUp ? 'text-primary font-semibold' : ''}>
-          Login
-        </Label>
-        <Switch id="auth-mode" checked={isSignUp} onCheckedChange={setIsSignUp} />
-        <Label htmlFor="auth-mode" className={isSignUp ? 'text-primary font-semibold' : ''}>
-          Sign Up
-        </Label>
-      </div>
+        <div className="mb-4 flex items-center justify-center space-x-2">
+            <Label htmlFor="auth-mode" className={!isSignUp ? 'text-primary font-semibold' : ''}>
+                Login
+            </Label>
+            <Switch id="auth-mode" checked={isSignUp} onCheckedChange={setIsSignUp} />
+            <Label htmlFor="auth-mode" className={isSignUp ? 'text-primary font-semibold' : ''}>
+                Sign Up
+            </Label>
+        </div>
 
       <form onSubmit={handleAuthAction} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">Email Address</Label>
-          <Input id="email" type="email" placeholder="doctor@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading || otpSent} />
+          <Input id="email" type="email" placeholder="doctor@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} />
         </div>
 
         {isSignUp && (
@@ -94,16 +135,9 @@ export function DoctorAuthForm() {
           </>
         )}
 
-        {otpSent && (
-          <div className="space-y-2">
-            <Label htmlFor="otp">OTP</Label>
-            <Input id="otp" type="text" placeholder="Enter 6-digit OTP" value={otp} onChange={(e) => setOtp(e.target.value)} required disabled={isLoading} maxLength={6} />
-          </div>
-        )}
-
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {otpSent ? (isSignUp ? 'Create Account' : 'Login') : 'Send OTP'}
+          Send OTP
         </Button>
       </form>
     </div>
