@@ -39,6 +39,7 @@ export function ChatInterface() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    //To check a input field have charecters and make sure loaging
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = { role: 'user', content: input };
