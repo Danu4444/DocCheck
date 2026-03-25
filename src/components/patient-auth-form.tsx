@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ChevronLeft } from 'lucide-react';
+import { Loader2, ChevronLeft, Phone, Lock, User } from 'lucide-react';
+import { StepIndicator } from '@/components/step-indicator';
 
 export function PatientAuthForm() {
   const [step, setStep] = useState('phone'); // 'phone', 'otp', 'name'
@@ -85,82 +86,111 @@ export function PatientAuthForm() {
       case 'otp':
         return (
           <>
-            <Button variant="link" onClick={handleBack} className="px-0 mb-4 text-muted-foreground">
-                <ChevronLeft className="mr-2 h-4 w-4" /> Go Back
+            <Button 
+              variant="link" 
+              onClick={handleBack} 
+              className="px-0 mb-6 text-muted-foreground hover:text-foreground"
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" /> Change Phone Number
             </Button>
-            <form onSubmit={handleVerifyOtp} className="space-y-4">
-                <div className="space-y-2">
-                    <Label>Phone Number</Label>
-                    <p className="text-sm font-bold">{`+91${phone}`}</p>
-                </div>
+            <form onSubmit={handleVerifyOtp} className="space-y-6">
+              <div className="bg-secondary/50 rounded-lg p-4 space-y-2">
+                <Label className="text-xs font-semibold text-muted-foreground">Sent to:</Label>
+                <p className="text-lg font-bold">{`+91${phone}`}</p>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="otp" className="text-base font-medium">Enter OTP</Label>
+                <p className="text-xs text-muted-foreground">Check your SMS for the OTP (demo: 123456)</p>
+              </div>
               <div className="space-y-2">
-                <Label htmlFor="otp">OTP</Label>
                 <Input
                   id="otp"
                   type="text"
-                  placeholder="Enter 6-digit OTP"
+                  placeholder="000000"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   required
                   disabled={isLoading}
                   maxLength={6}
+                  className="text-center text-2xl tracking-widest font-bold"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading} size="lg">
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Verify OTP
+                {isLoading ? 'Verifying...' : 'Verify OTP'}
               </Button>
+              <div className="text-center">
+                <Button variant="link" className="gap-1 text-xs h-auto p-0">
+                  Didn't receive OTP? <span className="underline">Resend</span>
+                </Button>
+              </div>
             </form>
           </>
         );
       case 'name':
          return (
             <>
-                <Button variant="link" onClick={handleBack} className="px-0 mb-4 text-muted-foreground">
+                <Button 
+                  variant="link" 
+                  onClick={handleBack} 
+                  className="px-0 mb-6 text-muted-foreground hover:text-foreground"
+                >
                     <ChevronLeft className="mr-2 h-4 w-4" /> Go Back
                 </Button>
-                <form onSubmit={handleRegister} className="space-y-4">
-                    <div className="space-y-2">
-                        <Label>Phone Number</Label>
-                        <p className="text-sm font-bold">{`+91${phone}`}</p>
+                <form onSubmit={handleRegister} className="space-y-6">
+                    <div className="bg-secondary/50 rounded-lg p-4 space-y-2">
+                        <Label className="text-xs font-semibold text-muted-foreground">Verified Phone:</Label>
+                        <p className="text-lg font-bold">{`+91${phone}`}</p>
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor="name" className="text-base font-medium">Your Full Name</Label>
+                        <p className="text-xs text-muted-foreground">This will be visible to doctors during consultations.</p>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="name">Full Name</Label>
                         <Input
-                        id="name"
-                        type="text"
-                        placeholder="Enter your full name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        disabled={isLoading}
+                          id="name"
+                          type="text"
+                          placeholder="e.g., Jane Doe"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          required
+                          disabled={isLoading}
+                          className="text-base"
                         />
                     </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
+                    <Button type="submit" className="w-full" disabled={isLoading} size="lg">
                         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Register
+                        {isLoading ? 'Creating Account...' : 'Complete Registration'}
                     </Button>
                 </form>
             </>
          );
       default: // 'phone' step
         return (
-          <form onSubmit={handleSendOtp} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="e.g., 9876543210"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-                disabled={isLoading}
-              />
+          <form onSubmit={handleSendOtp} className="space-y-6">
+            <div className="space-y-1">
+              <Label htmlFor="phone" className="text-base font-medium">Phone Number</Label>
+              <p className="text-xs text-muted-foreground">We'll send you an OTP to verify your number.</p>
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <div className="space-y-2">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">+91</span>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="9876543210"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  required
+                  disabled={isLoading}
+                  className="pl-12"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">Enter a 10-digit Indian phone number</p>
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading} size="lg">
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Send OTP
+              {isLoading ? 'Sending OTP...' : 'Send OTP'}
             </Button>
           </form>
         );
@@ -168,7 +198,12 @@ export function PatientAuthForm() {
   }
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 space-y-6">
+      <StepIndicator 
+        steps={['Phone', 'Verify OTP', 'Complete Profile']} 
+        currentStep={step} 
+        stepOrder={['phone', 'otp', 'name']} 
+      />
       {renderFormContent()}
     </div>
   );
